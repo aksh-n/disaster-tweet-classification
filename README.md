@@ -6,4 +6,4 @@ The data has been taken from [here](https://www.kaggle.com/c/nlp-getting-started
 
 ------
 
-This project has been tested on Python 3.9.5.
+The code has been tested on Python 3.9.5.
