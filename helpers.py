@@ -2,7 +2,7 @@
 
 This module provides helper functions, to be used for the naive Bayes algorithm of main.py. The 
 purposes of the helper functions relate to reading files, checking render, dividing original
-training set into two sets.
+training set into two sets, and tokenizing and normalizing the text data.
 They are not meant for standalone purposes.
 
 Copyright (c) 2021 Akshat Naik.
@@ -13,8 +13,8 @@ from pprint import pprint as pp
 from typing import Iterable
 
 
-def read_csv(filename: str) -> list[list[str]]:
-    """Returns a list of the reader object of the filename csv where filename takes four possible
+def get_dataset(filename: str) -> list[list[str]]:
+    """Returns the dataset of the filename, rendered using csv, where filename takes four possible
     parameters: 'train', 'new_train', 'dev' or 'test'
     """
     if filename in ('train', 'test'):
@@ -29,9 +29,9 @@ def read_csv(filename: str) -> list[list[str]]:
         return list(tweetsreader)
 
 
-def check_render(list_of_lines: list[list[str]], is_test: bool) -> bool:
-    """Returns whether the list_of_lines has been rendered correctly by the csv module."""
-    for line in list_of_lines:
+def check_render(dataset: list[list[str]], is_test: bool) -> bool:
+    """Returns whether the dataset has been rendered correctly by the csv module."""
+    for line in dataset:
         if not is_test:  # if it is a training dataset, then target is also there
             id, keyword, location, text, target = line
         else:
@@ -50,7 +50,7 @@ def divide_train_set() -> None:
     random.seed(1926)  # for reproducibility
 
     # divides the original set into a new training set and a development set
-    original_train_set = read_csv('train')
+    original_train_set = get_dataset('train')
     n_dev_set = len(original_train_set) // 10
     dev_set = random.sample(original_train_set, k=n_dev_set)
     new_train_set = []
@@ -69,12 +69,59 @@ def divide_train_set() -> None:
         dev_writer.writerow(['id', 'keyword', 'location', 'text', 'target'])
         dev_writer.writerows(dev_set)
 
+
+def process_tweets(text: str) -> list[str]:
+    """Returns a list of tokens from the text of the tweet after normalizing and tokenizing the
+    text of the tweet.
+    """
+    text = text.lower()
+
+    # Remove urls
+    text = re.sub(r'http\S+|www\S+', '', text)
+    # Remove user @ references and # from tweet
+    text = re.sub(r'\@\w+|\#', '', text)
+    # Remove punctuations that occur either start of the string or end-of-word
+    # and "words" that contain only numbers and punctuations (like dates or time),
+    # and condense all whitespaces to one whitespace
+    text = re.sub(r'^[^A-Za-z]+|\b[^A-Za-z]+', '', text)
+    # Tokenize by splitting by whitespaces
+    list_of_words = text.split()
+
+    return list_of_words
+
+
+def get_vocab(dataset: list[list[str]]) -> set[str]:
+    """Returns a set of words that are found in the text field of the dataset."""
+    vocab = set()
+    for line in dataset:
+        text = line[3]
+        words = process_tweets(text)
+        vocab.update(words)
+    return vocab
+
+
+def divide_dataset_targets(dataset: list[list[str]]) -> (list[list[str]], list[list[str]]):
+    """Return two datasets, one with only 0 as the target and one with only 1 as the target in the
+    text field of the dataset.
+    """
+    data_0 = []
+    data_1 = []
+    for line in dataset:
+        if line[-1] == '0':
+            data_0.append(line)
+        elif line[-1] == '1':
+            data_1.append(line)
+        else:
+            raise ValueError('The value of the target is neither 0 nor 1')
+    return data_0, data_1
+
+
 if __name__ == "__main__":
-    train = read_csv('train')
-    test = read_csv('test')
+    train = get_dataset('train')
+    test = get_dataset('test')
     # divide_train_set()
-    new_train = read_csv('new_train')
-    dev = read_csv('dev')
+    new_train = get_dataset('new_train')
+    dev = get_dataset('dev')
     assert len(new_train) + len(dev) == len(train)
 
     for i in (train, new_train, dev):
