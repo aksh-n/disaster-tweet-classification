@@ -26,7 +26,7 @@ def evaluate_accuracy(write_results: bool=False) -> int:
     comparisons = []
     for ind, line in enumerate(test_dataset):
         expected_target = line[-1]
-        predicted_target = str(test_results[ind])
+        predicted_target = test_results[ind]
         if expected_target == predicted_target:
             correct_predictions += 1
         if write_results:
