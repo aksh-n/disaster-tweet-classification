@@ -6,6 +6,7 @@ The accuracy of the algorithm is evaluated as well.
 Copyright (c) 2021 Akshat Naik.
 Licensed under the MIT License. See LICENSE in the project root for license information.
 """
+import csv
 from math import log
 from collections import Counter, defaultdict
 import helpers
@@ -59,7 +60,7 @@ def get_count(dataset: list[list[str]]) -> Counter:
 
 
 def test_naive_bayes(testdoc: list[str], logprior_0: int, logprior_1: int, 
-                     loglikelihood_0: dict[str, int], loglikelihood_1: dict[str, int]) -> int:
+                     loglikelihood_0: dict[str, int], loglikelihood_1: dict[str, int]) -> str:
     """Returns the best target, 0 or 1, classified for the testdoc based on the naive multinomial
     Bayes algorithm.
     """
@@ -72,9 +73,9 @@ def test_naive_bayes(testdoc: list[str], logprior_0: int, logprior_1: int,
         sum_0 += loglikelihood_0[word]
         sum_1 += loglikelihood_1[word]
     if sum_0 >= sum_1:
-        return 0
+        return '0'
     else:
-        return 1
+        return '1'
 
 
 def mass_test_naive_bayes(train_dataset: list[list[str]], test_dataset: list[list[str]]) -> list[int]:
@@ -89,5 +90,19 @@ def mass_test_naive_bayes(train_dataset: list[list[str]], test_dataset: list[lis
     return test_results
 
 
+def submission() -> None:
+    """Writes a csv file containing the submission results for test.csv"""
+    train_dataset = helpers.get_dataset('train')
+    test_dataset = helpers.get_dataset('test')
+    test_results = mass_test_naive_bayes(train_dataset, test_dataset)
+    assert len(test_dataset) == len(test_results)
+    test_results = [(test_dataset[i][0], test_results[i]) for i in range(len(test_dataset))]
+
+    with open('data/submission.csv', 'w', encoding='utf-8', newline='') as csvfile:
+        submit_writer = csv.writer(csvfile)
+        submit_writer.writerow(['id', 'target'])
+        submit_writer.writerows(test_results)
+
+
 if __name__ == "__main__":
-    pass
+    submission()
