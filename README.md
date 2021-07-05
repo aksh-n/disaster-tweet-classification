@@ -1,5 +1,5 @@
 # Disaster Tweet Classification
-A prediction program that classifies tweets into whether they announce a disaster or not.
+A prediction program that classifies tweets into ones which announce a disaster and others which do not.
 The program implements supervised learning using the multinomial naive Bayes classifier, a probabilistic and generative classifier. 
 
 The data has been taken from [here](https://www.kaggle.com/c/nlp-getting-started/data). Displaying the code and the data publicly here is in compliance with the rules of the competition.
